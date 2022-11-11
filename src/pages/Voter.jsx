@@ -7,10 +7,11 @@ import red from "../assets/red.png";
 import grey from "../assets/grey.png";
 import "../App.css";
 import { io } from "socket.io-client";
+// const socket = io("https://quiz-fea21.azurewebsites.net", {withCredentials: true});
 const socket = io("http://localhost:3000");
 
 function Voter() {
-    const [displayMessage, setDisplayMessage] = useState("");
+    const [displayMessage, setDisplayMessage] = useState("");   
     const [showA, setShowA] = useState("");
     const [showB, setShowB] = useState("");
     const [totalVotes, setTotalVotes] = useState("");
@@ -69,7 +70,8 @@ function Voter() {
         localStorage.setItem("voted", x);
     }
     return (
-        <div><h1>Elev-quiz</h1>
+        <div>
+            <h1>Elev-quiz</h1>
             <div>
                 Fråga:
                 <div className="question">{questionString}</div>
