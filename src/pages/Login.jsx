@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 // const socket = io("https://quiz-fea21.azurewebsites.net", {withCredentials: true});
-const socket = io("https://petter-quiz-back.herokuapp.com");
+const socket = io("https://eloquent-alpaca-2a04ea.netlify.app");
 
 function Login() {
     const [passwordValue, setPasswordValue] = useState("");
@@ -12,16 +12,16 @@ function Login() {
             console.log(`You connected with id:${socket.id} `);
         });
         socket.on("token", (token) => {
-            // if (token === 404) {
-            //     setLoginStatus("Wrong password");
-            //     setTimeout(() => {
-            //         setLoginStatus("Login Password");
-            //     }, 3000);
-            //     return;
-            // } else {
-            //     sessionStorage.setItem("token", token);
-            //     window.location = "/admin";
-            // }
+            if (token === 404) {
+                setLoginStatus("Wrong password");
+                setTimeout(() => {
+                    setLoginStatus("Login Password");
+                }, 3000);
+                return;
+            } else {
+                sessionStorage.setItem("token", token);
+                window.location = "/admin";
+            }
         });
     }, []);
 
