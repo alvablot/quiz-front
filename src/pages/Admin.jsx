@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { docco } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import blue from "../assets/blue.png";
-import red from "../assets/red.png";
-import grey from "../assets/grey.png";
+import Votes from "../components/Votes";
 
 const socket = io("http://localhost:3000");
 
@@ -20,6 +18,9 @@ function Admin() {
     const [redProc, setRedProc] = useState("");
     const [codeString, setCodeString] = useState("");
     const [questionString, setQuestionString] = useState("");
+    const [welcome, setWelcome] = useState("");
+    const [visible, setVisible] = useState(false);
+
     socket.on("recieveVote", (totalA, totalB) => {
         const totalt = totalA + totalB;
         setBlueProc(Math.ceil((totalA / totalt) * 100));
@@ -31,10 +32,10 @@ function Admin() {
         setShowB(totalB);
         setTotalVotes(totalt);
     });
+
     function reset() {
         socket.emit("reset");
-        setCodeString("");
-        setQuestionString("");
+
         setBlueProc(0);
         setRedProc(0);
         setBlueWidth(0);
@@ -43,97 +44,108 @@ function Admin() {
         setShowA("");
         setShowB("");
         setTotalVotes("");
-        setCodeString("");
-        setQuestionString("");
     }
+
     useEffect(() => {
         setGreyWidth(300 - blueWidth);
         setGreyWidth2(300 - redWidth);
     }, [blueWidth]);
+
+    if (sessionStorage.getItem("token")) {
+        const token = sessionStorage.getItem("token");
+
+        socket.emit("checkToken", token);
+        socket.on("confirmToken", (isConfirmed, userName) => {
+            if (!isConfirmed) {
+                window.location = "/login";
+                return <div>Ej inloggad</div>;
+            } else {
+                setWelcome(`Välkommen ${userName}`);
+            }
+        });
+    } else {
+        window.location = "/login";
+        return <div>Ej inloggad</div>;
+    }
     return (
         <div>
-            <h1>Lärare</h1>
+            <h1>{welcome}</h1>
             {/* <div>
                 <button>Lägg till fråga</button>
             </div> */}
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    e.target.questArea.value = "";
-                    e.target.codeArea.value = "";
-                }}
-            >
-                <div>
-                    Skriv en fråga
-                    <br />
-                    <textarea
-                        name="questArea"
-                        onChange={(e) => {
-                            setQuestionString(e.target.value);
-                        }}
-                    ></textarea>
-                </div>
-                <div>
-                    Kod
-                    <br />
-                </div>
-                <div>
-                    <textarea
-                        name="codeArea"
-                        onChange={(e) => {
-                            setCodeString(e.target.value);
-                        }}
-                    ></textarea>
-                    <br />
-                    {/* <button>Spara</button> */}
-                    <button
-                        onClick={() => {
-                            reset();
-                        }}
-                    >
-                        Reset
-                    </button>
-                </div>
-            </form>
+            <div>
+                Skriv en fråga
+                <br />
+                <textarea
+                    name="questArea"
+                    onChange={(e) => {
+                        setQuestionString(e.target.value);
+                    }}
+                ></textarea>
+            </div>
+            <div>
+                Kod
+                <br />
+            </div>
+            <div>
+                <textarea
+                    name="codeArea"
+                    onChange={(e) => {
+                        setCodeString(e.target.value);
+                        setVisible(true);
+                    }}
+                ></textarea>
+                <br />
+                {/* <button>Spara</button> */}
+            </div>
             <div>
                 <button
-                    onClick={() => {
+                    onClick={(e) => {
+                        e.preventDefault();
+                        reset();
+                    }}
+                >
+                    Reset
+                </button>
+                <button
+                    onClick={(e) => {
+                        e.preventDefault();
                         socket.emit("sendQuestion", questionString, codeString);
                     }}
                 >
                     Skicka
                 </button>
+                <button
+                    onClick={() => {
+                        sessionStorage.clear();
+                        window.location = "/login";
+                    }}
+                >
+                    Logga ut
+                </button>
 
                 <br />
-                <br />
-                <div>Kod-förhandsgranskning </div>
-                <div className="code-container">
-                    <SyntaxHighlighter className="preview" language="javascript" style={docco}>
-                        {codeString}
-                    </SyntaxHighlighter>
-                </div>
-            </div>
-            <div>
-                {" "}
-                <h3>Totalt: {totalVotes}</h3>
-                <div className="dia-container">
-                    <div className="box1">
-                        Ja {showA} {blueProc | 0} %
-                    </div>
-
-                    <div className="box3">
-                        <img src={blue} width={blueWidth | 0} height="50" />
-                        <img src={grey} width={greyWidth | 0} height="50" />
-                    </div>
-                    <div className="box2">
-                        Nej {showB} {redProc | 0} %
-                    </div>
-                    <div className="box4">
-                        <img src={red} width={redWidth | 0} height="50" />
-                        <img src={grey} width={greyWidth2 | 0} height="50" />
+                <div style={{ display: visible ? "block" : "none" }}>
+                    <div>Kod-förhandsgranskning </div>
+                    <div className="code-container">
+                        <SyntaxHighlighter className="preview" language="javascript" style={docco}>
+                            {codeString}
+                        </SyntaxHighlighter>
                     </div>
                 </div>
             </div>
+
+            <Votes
+                totalVotes={totalVotes}
+                showA={showA}
+                showB={showB}
+                blueProc={blueProc}
+                redProc={redProc}
+                redWidth={redWidth}
+                blueWidth={blueWidth}
+                greyWidth={greyWidth}
+                greyWidth2={greyWidth2}
+            />
         </div>
     );
 }
