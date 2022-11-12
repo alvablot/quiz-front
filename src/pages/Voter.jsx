@@ -6,7 +6,7 @@ import Votes from "../components/Votes";
 import "../App.css";
 import { io } from "socket.io-client";
 // const socket = io("https://quiz-fea21.azurewebsites.net", {withCredentials: true});
-const socket = io("https://eloquent-alpaca-2a04ea.netlify.app");
+const socket = io("http://localhost:3000");
 
 function Voter() {
     const [displayMessage, setDisplayMessage] = useState("");
