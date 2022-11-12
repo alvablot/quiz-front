@@ -4,7 +4,7 @@ import SyntaxHighlighter from "react-syntax-highlighter";
 import { docco } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import Votes from "../components/Votes";
 
-const socket = io("http://localhost:3000");
+const socket = io("https://petter-quiz-back.herokuapp.com");
 
 function Admin() {
     const [showA, setShowA] = useState("");
